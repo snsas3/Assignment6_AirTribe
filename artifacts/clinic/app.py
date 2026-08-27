@@ -124,6 +124,10 @@ def _inject_csrf():
 
 @app.before_request
 def _csrf_protect():
+    # Waitress keeps the Flask process alive between requests. Clear Jinja's
+    # in-process cache so the preview always reads the current template file,
+    # even when the editor writes a change without a reliable mtime update.
+    app.jinja_env.cache.clear()
     if request.method != "POST":
         return None
     if request.path in CSRF_EXEMPT_PATHS:
