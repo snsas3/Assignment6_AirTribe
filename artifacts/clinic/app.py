@@ -38,7 +38,22 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=os.environ.get("FLASK_ENV") == "production",
+    # The clinic is served by Waitress rather than Flask's development
+    # reloader. Keep Jinja checking template mtimes so edits to templates such
+    # as patient.html are visible without restarting the server.
+    TEMPLATES_AUTO_RELOAD=True,
+    SEND_FILE_MAX_AGE_DEFAULT=0,
 )
+app.jinja_env.auto_reload = True
+
+
+@app.after_request
+def _disable_dynamic_page_caching(response):
+    """Prevent the preview/browser from serving an older rendered page."""
+    if response.content_type and response.content_type.startswith("text/html"):
+        response.headers["Cache-Control"] = "no-store, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+    return response
 
 # ── Demo credentials ──────────────────────────────────────────────
 # Passwords are read from environment variables so they are NOT committed
