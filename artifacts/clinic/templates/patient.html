@@ -846,8 +846,8 @@ Health{% endblock %} {% block nav_search %}
       {% endif %}
     </div>
     <p class="hero-sub">
-      Longitudinal view &mdash; synthesised from the full patient record &middot; non-diagnostic &middot;
-      verify before acting
+      Longitudinal view &mdash; synthesised from the full patient record
+      &middot; non-diagnostic &middot; verify before acting
     </p>
 
     {% if summary and summary.generated %} {% if override %}
@@ -914,37 +914,48 @@ Health{% endblock %} {% block nav_search %}
   <div class="nextsteps">
     <div class="ns-head">
       <div class="ns-title">
-        <span class="spark">&#10022;</span> Structured Note &mdash; the note you just wrote
+        <span class="spark">&#10022;</span> Structured Note &mdash; the note you
+        just wrote
       </div>
-      <span class="ns-tag">AI-structured &middot; grounded in the note only</span>
+      <span class="ns-tag"
+        >AI-structured &middot; grounded in the note only</span
+      >
     </div>
 
+    {% set filled = [] %} {% set missing = [] %} {% for key, label in
+    [("symptoms","Symptoms"), ("history","History"),
+    ("observations","Observations"), ("next_steps","Next Steps")] %} {% set val
+    = summary.structured[key] %} {% if val and not val.lower().startswith("not
+    documented") %} {% set _ = filled.append((key, label, val)) %} {% else %} {%
+    set _ = missing.append(label) %} {% endif %} {% endfor %} {% if filled %}
     <div class="hero-grid">
-      {% for key, label in [("symptoms","Symptoms"), ("history","History"), ("observations","Observations"), ("next_steps","Next Steps")] %}
+      {% for key, label, val in filled %}
       <div>
         <div class="sec-label">
-          {{ label }}{% set c = summary.confidence.get(key) if summary.confidence else None %}{% if c %} <span style="font-size:11px;padding:1px 7px;border-radius:10px;margin-left:4px;background:{{ c.color }}22;color:{{ c.color }};border:1px solid {{ c.color }};">{{ c.label }}</span>{% endif %}
+          {{ label }}{% set c = summary.confidence.get(key) if
+          summary.confidence else None %}{% if c %}
+          <span
+            style="font-size:11px;padding:1px 7px;border-radius:10px;margin-left:4px;background:{{ c.color }}22;color:{{ c.color }};border:1px solid {{ c.color }};"
+            >{{ c.label }}</span
+          >{% endif %}
         </div>
-        {% set val = summary.structured[key] %}
-        {% if val and not val.lower().startswith("not documented") %}
         <p class="sec-body">{{ val }}</p>
-        {% else %}
-        <p class="sec-body" style="opacity:0.5;font-style:italic;">Not documented in this note</p>
-        {% endif %}
       </div>
       {% endfor %}
     </div>
+    {% endif %} {% if missing %}
+    <p class="ns-disclaimer" style="opacity: 0.75">
+      Not documented in this note: {{ missing | join(", ") }}.
+    </p>
+    {% endif %}
 
     <p class="ns-disclaimer">
-      Each section is filled only from the clinician's own words &mdash; blank
-      sections simply weren't in the note, never invented. The badge shows how
-      much of a section traces back to the note, not whether it is clinically
-      correct.
+      Only sections the clinician actually wrote are shown &mdash; nothing is
+      invented. The badge shows how much of a section traces back to the note,
+      not whether it is clinically correct.
     </p>
   </div>
-  {% endif %}
-
-  {% if summary and summary.generated and summary.actions %}
+  {% endif %} {% if summary and summary.generated and summary.actions %}
   <div class="nextsteps">
     <div class="ns-head">
       <div class="ns-title">Suggested Next Steps</div>
@@ -965,7 +976,10 @@ Health{% endblock %} {% block nav_search %}
   <!-- ══ NOTE CARD ══ -->
   {% if is_doctor %}
   <div class="notebar">
-    <form method="POST" action="/submit-note{{ '?from=admin' if back and back.label == 'Back to dashboard' else '' }}">
+    <form
+      method="POST"
+      action="/submit-note{{ '?from=admin' if back and back.label == 'Back to dashboard' else '' }}"
+    >
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
       <input type="hidden" name="patient_id" value="{{ patient.id }}" />
       <div class="lbl">Add handoff note</div>
@@ -1152,7 +1166,9 @@ Health{% endblock %} {% block nav_search %}
         </select>
       </label>
       <label class="pm-label">
-        <span class="pm-reason-label">Reason <span class="pm-req">(required)</span></span>
+        <span class="pm-reason-label"
+          >Reason <span class="pm-req">(required)</span></span
+        >
         <textarea
           id="prioReason"
           name="reason"
